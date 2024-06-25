@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/ic_launcher.png" href="/favicon.ico">
+    <title>Random Quest Generator</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js');
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="status-window">
+        <h1>STATUS</h1>
+        <div class="status-details">
+            <p>Name: <span id="name">Player 0</span></p>
+            <p>Age: <span id="age">Mortal</span></p>
+            <p>Hobbies: <span id="hobbies">Gaming, Reading</span></p>
+            <p>Level: <span id="level">1</span></p>
+            <p>Points: <span id="points">0</span></p>
+        </div>
+    </div>
+    <div class="quest-window">
+        <h1>Random Quests</h1>
+        <div id="quest-container">
+            <!-- Random quests will be injected here -->
+        </div>
+    </div>
+    <script src="scripts.js"></script>
+</body>
+</html>

@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function scheduleRandomQuest() {
-        const delay = Math.random() * 60000 + 60000; // Between 1 and 2 minutes
+        const delay = Math.random() * 6000 + 6000; // Between 1 and 2 minutes
         setTimeout(() => {
             const quest = getRandomQuest();
             displayQuest(quest);

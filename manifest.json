@@ -3,7 +3,7 @@
     "name": "Random Quest Generator",
     "short_name": "QuestGen",
     "description": "Generate random quests and complete them to earn points!",
-    "start_url": "./index.html",
+    "start_url": "https://github.com/tiliouan/thesystem/blob/main/index.html",
     "display": "standalone",
     "background_color": "#000",
     "theme_color": "#00aaff",

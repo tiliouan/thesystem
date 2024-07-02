@@ -1,7 +1,7 @@
 {
     
-    "name": "Random Quest Generator",
-    "short_name": "QuestGen",
+    "name": "TheSystem",
+    "short_name": "system",
     "description": "Generate random quests and complete them to earn points!",
     "start_url": "./index.html",
     "display": "standalone",

@@ -59,9 +59,56 @@ document.addEventListener('DOMContentLoaded', () => {
       loadPlayerData();
       loadQuestsOffline();
       setupPlayerSearch();
+      setupNotifications();
+    }
+
+    // New function to handle notifications across platforms
+    function setupNotifications() {
+      // Check if this is a mobile device
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
       if ('Notification' in window) {
-        Notification.requestPermission();
+        if (isMobile) {
+          // On mobile, we'll show a button to request permission
+          const notifButton = document.createElement('button');
+          notifButton.id = 'notification-permission-btn';
+          notifButton.innerText = 'Enable Quest Notifications';
+          notifButton.classList.add('permission-button');
+          notifButton.addEventListener('click', requestNotificationPermission);
+          
+          // Add the button after the status window
+          const statusWindow = document.querySelector('.status-window');
+          statusWindow.parentNode.insertBefore(notifButton, statusWindow.nextSibling);
+          
+          // Hide button if permission already granted
+          if (Notification.permission === 'granted') {
+            notifButton.style.display = 'none';
+          }
+        } else {
+          // On desktop, we can request directly
+          requestNotificationPermission();
+        }
       }
+    }
+    
+    // Separate function to request notification permission
+    function requestNotificationPermission() {
+      Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+          console.log('Notification permission granted.');
+          // Hide the button if it exists
+          const notifButton = document.getElementById('notification-permission-btn');
+          if (notifButton) {
+            notifButton.style.display = 'none';
+          }
+          
+          // Show a test notification to confirm it works
+          const testNotification = new Notification('Quest System Ready!', {
+            body: 'You will now receive notifications for new quests.',
+            icon: './icon.png'
+          });
+        }
+      });
     }
   
     function loadPlayerData() {
@@ -307,13 +354,38 @@ document.addEventListener('DOMContentLoaded', () => {
   
     function showNotification(message) {
       if (Notification.permission === 'granted') {
-        new Notification(message);
-      } else if (Notification.permission !== 'denied') {
-        Notification.requestPermission().then(permission => {
-          if (permission === 'granted') {
-            new Notification(message);
+        try {
+          const notification = new Notification('Quest System', {
+            body: message,
+            icon: './icon.png'
+          });
+          
+          // Auto close notification after 5 seconds on mobile
+          if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+            setTimeout(() => {
+              notification.close();
+            }, 5000);
           }
-        });
+          
+          // Add click event to notification
+          notification.onclick = function() {
+            window.focus();
+            this.close();
+          };
+        } catch (error) {
+          console.error('Notification error:', error);
+        }
+      } else if (Notification.permission !== 'denied') {
+        // This is likely a mobile device that needs user interaction first
+        const notifButton = document.getElementById('notification-permission-btn');
+        if (notifButton) {
+          notifButton.style.display = 'block';
+          // Add a visual indicator that there's a new quest
+          notifButton.classList.add('notify-pulse');
+          setTimeout(() => {
+            notifButton.classList.remove('notify-pulse');
+          }, 2000);
+        }
       }
     }
   

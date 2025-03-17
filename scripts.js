@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
     function initializeApp() {
       loadPlayerData();
-      fetchQuests();
+      loadQuestsOffline();
       setupPlayerSearch();
       if ('Notification' in window) {
         Notification.requestPermission();
@@ -82,15 +82,78 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('player', JSON.stringify(player));
     }
   
-    // Fetch quests from quests.json file
+    // New function to load quests with offline support
+    function loadQuestsOffline() {
+      // First try to get quests from localStorage
+      const cachedQuests = localStorage.getItem('cachedQuests');
+      if (cachedQuests) {
+        quests = JSON.parse(cachedQuests);
+        console.log('Loaded quests from cache');
+        scheduleRandomQuest();
+      }
+      
+      // Always try to fetch new quests, even if we have cached ones
+      fetchQuests();
+    }
+
+    // Modified to support offline mode with quests.json as the source of truth
     function fetchQuests() {
-      fetch('quests.json')
-        .then(response => response.json())
+      fetch('./quests.json')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
         .then(data => {
           quests = data;
-          scheduleRandomQuest();
+          // Always update the cache with the latest quests
+          localStorage.setItem('cachedQuests', JSON.stringify(data));
+          console.log('Updated quests cache from quests.json');
+          
+          // If this is the first quest, schedule one immediately
+          if (!document.querySelector('.quest')) {
+            scheduleRandomQuest();
+          }
         })
-        .catch(err => console.error("Error loading quests:", err));
+        .catch(err => {
+          console.error("Error loading quests:", err);
+          // If we have no quests at all, try to use fallback quests
+          if (!quests || quests.length === 0) {
+            // Try to use the default quests.json content that was cached by the service worker
+            caches.match('./quests.json')
+              .then(response => {
+                if (response) {
+                  return response.json();
+                }
+                // If no cached version, use hard-coded fallback
+                return getFallbackQuests();
+              })
+              .then(fallbackQuests => {
+                quests = fallbackQuests;
+                localStorage.setItem('cachedQuests', JSON.stringify(fallbackQuests));
+                console.log('Using fallback quests');
+                scheduleRandomQuest();
+              })
+              .catch(() => {
+                // Last resort fallback
+                quests = getFallbackQuests();
+                localStorage.setItem('cachedQuests', JSON.stringify(quests));
+                scheduleRandomQuest();
+              });
+          }
+        });
+    }
+  
+    // Fallback quests if everything else fails
+    function getFallbackQuests() {
+      return [
+        {"quest": "Do 20 push-ups", "rank": "E"},
+        {"quest": "Take a 15-minute walk", "rank": "E"},
+        {"quest": "Drink a glass of water", "rank": "E"},
+        {"quest": "Stretch for 5 minutes", "rank": "E"},
+        {"quest": "Practice deep breathing for 3 minutes", "rank": "E"}
+      ];
     }
   
     // Returns a random quest time (in seconds) between 1 minute and 5 hours
@@ -288,15 +351,38 @@ document.addEventListener('DOMContentLoaded', () => {
       return available[Math.floor(Math.random() * available.length)];
     }
   
-    // Player search: now only by player name, displaying rank and level
+    // Enhanced player search with local storage
     function setupPlayerSearch() {
-      const samplePlayers = [
+      // Get default sample players
+      let samplePlayers = [
         { name: "Alice", rank: "B", level: 5 },
         { name: "Bob", rank: "D", level: 3 },
         { name: "Charlie", rank: "S", level: 7 },
         { name: "Diana", rank: "A", level: 6 }
       ];
-  
+      
+      // Try to load players from local storage
+      const storedPlayers = localStorage.getItem('samplePlayers');
+      if (storedPlayers) {
+        samplePlayers = JSON.parse(storedPlayers);
+      } else {
+        // If not found, store the default ones
+        localStorage.setItem('samplePlayers', JSON.stringify(samplePlayers));
+      }
+      
+      // Add current player to list if not already there
+      if (player && player.name) {
+        const playerExists = samplePlayers.some(p => p.name === player.name);
+        if (!playerExists) {
+          samplePlayers.push({
+            name: player.name,
+            rank: player.rank,
+            level: player.level
+          });
+          localStorage.setItem('samplePlayers', JSON.stringify(samplePlayers));
+        }
+      }
+
       document.getElementById('player-search-form').addEventListener('submit', (e) => {
         e.preventDefault();
         const searchName = document.getElementById('search-name').value.toLowerCase();
@@ -318,5 +404,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     }
+    
+    // Check connection status
+    window.addEventListener('online', () => {
+      console.log('Application is back online');
+      fetchQuests(); // Refresh quests when back online
+    });
+    
+    window.addEventListener('offline', () => {
+      console.log('Application is offline');
+    });
   });
-  

@@ -3,14 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="icon" type="image/png" href="/favicon.ico" />
+  <link rel="icon" type="image/png" href="./favicon.ico" />
   <title>Random Quest Generator</title>
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#000000">
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js');
+        navigator.serviceWorker.register('./service-worker.js')
+          .then(registration => {
+            console.log('Service Worker registered with scope:', registration.scope);
+          })
+          .catch(error => {
+            console.error('Service Worker registration failed:', error);
+          });
       });
     }
   </script>
@@ -68,11 +75,6 @@
       <!-- Search results will be shown here -->
     </div>
   </div>
-  <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/service-worker.js");
-    }
-  </script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging.js"></script>
   <script>
@@ -103,6 +105,26 @@
       });
     }
   </script>  
-  <script src="scripts.js"></script>
+  <script src="./scripts.js"></script>
+  <script>
+    // Firebase implementation with offline support
+    document.addEventListener('DOMContentLoaded', () => {
+      // Check if we're online
+      if (!navigator.onLine) {
+        console.log('Application is running in offline mode');
+      }
+      
+      // When back online
+      window.addEventListener('online', () => {
+        console.log('Back online, syncing data...');
+        // Here you could sync any data that was saved locally while offline
+      });
+      
+      // When going offline
+      window.addEventListener('offline', () => {
+        console.log('Going offline, data will be stored locally');
+      });
+    });
+  </script>
 </body>
 </html>

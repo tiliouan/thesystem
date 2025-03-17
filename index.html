@@ -1,37 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/ic_launcher.png" href="/favicon.ico">
-    <title>Random Quest Generator</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="manifest" href="manifest.json">
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js');
-            });
-        }
-    </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="/favicon.ico" />
+  <title>Random Quest Generator</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="manifest" href="manifest.json" />
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js');
+      });
+    }
+  </script>
 </head>
 <body>
-    <div class="status-window">
-        <h1>STATUS</h1>
-        <div class="status-details">
-            <p>Name: <span id="name">Player 0</span></p>
-            <p>Age: <span id="age">Mortal</span></p>
-            <p>Hobbies: <span id="hobbies">Gaming, Reading</span></p>
-            <p>Level: <span id="level">1</span></p>
-            <p>Points: <span id="points">0</span></p>
-        </div>
+  <!-- Registration Modal (shown only first time) -->
+  <div id="registration-modal" class="modal">
+    <div class="modal-content">
+      <h2>Register</h2>
+      <form id="registration-form">
+        <label for="reg-name">Name:</label>
+        <input type="text" id="reg-name" required />
+        <label for="reg-age">Age:</label>
+        <input type="number" id="reg-age" required />
+        <label for="reg-gender">Gender:</label>
+        <select id="reg-gender" required>
+          <option value="">Select Gender</option>
+          <option value="boy">Boy</option>
+          <option value="girl">Girl</option>
+        </select>
+        <button type="submit">Submit</button>
+      </form>
     </div>
-    <div class="quest-window">
-        <h1>Random Quests</h1>
-        <div id="quest-container">
-            <!-- Random quests will be injected here -->
-        </div>
+  </div>
+
+  <!-- Main App Content -->
+  <div class="status-window">
+    <h1>Status</h1>
+    <div class="status-details">
+      <p>Name: <span id="name">Player 0</span></p>
+      <p>Age: <span id="age">-</span></p>
+      <p>Gender: <span id="gender">-</span></p>
+      <p>Rank: <span id="rank">E</span></p>
+      <p>Level: <span id="level">1</span></p>
+      <p>Points: <span id="points">0</span></p>
+      <p>Title: <span id="title">The Rising Star</span></p>
     </div>
-    <script src="scripts.js"></script>
+  </div>
+
+  <div class="quest-window">
+    <h1>Active Quest</h1>
+    <div id="quest-container">
+      <!-- A quest will be injected here -->
+    </div>
+  </div>
+
+  <div class="player-search-window">
+    <h1>Player Search</h1>
+    <form id="player-search-form">
+      <label for="search-name">Player Name:</label>
+      <input type="text" id="search-name" placeholder="Enter player name" />
+      <button type="submit">Search</button>
+    </form>
+    <div id="player-search-results">
+      <!-- Search results will be shown here -->
+    </div>
+  </div>
+
+  <script src="scripts.js"></script>
 </body>
 </html>

@@ -68,7 +68,41 @@
       <!-- Search results will be shown here -->
     </div>
   </div>
-
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/service-worker.js");
+    }
+  </script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging.js"></script>
+  <script>
+    const firebaseConfig = {
+    apiKey: "AIzaSyC9JkocYa1DZJfhLdV_qIYi7wT4Xbmu77I",
+    authDomain: "thesystem-syx.firebaseapp.com",
+    projectId: "thesystem-syx",
+    storageBucket: "thesystem-syx.firebasestorage.app",
+    messagingSenderId: "607837602827",
+    appId: "1:607837602827:web:dace4adf934a42a07a330e"
+  };
+  
+    firebase.initializeApp(firebaseConfig);
+    const messaging = firebase.messaging();
+  
+    messaging.onMessage((payload) => {
+      new Notification(payload.notification.title, {
+        body: payload.notification.body,
+        icon: "/icon.png",
+      });
+    });
+  
+    function requestPermission() {
+      Notification.requestPermission().then((permission) => {
+        if (permission === "granted") {
+          console.log("Notification permission granted.");
+        }
+      });
+    }
+  </script>  
   <script src="scripts.js"></script>
 </body>
 </html>

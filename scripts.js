@@ -104,9 +104,23 @@ document.addEventListener('DOMContentLoaded', () => {
           
           // Show a test notification to confirm it works
           const testNotification = new Notification('Quest System Ready!', {
-            body: 'You will now receive notifications for new quests.',
+            body: 'You will now receive notifications for new quests!',
             icon: './icon.png'
           });
+          
+          // If there's an active quest already, show notification for it again
+          const questElement = document.querySelector('.quest');
+          if (questElement) {
+            const questText = questElement.querySelector('p').innerText;
+            const questRank = questElement.querySelector('p:nth-child(2)').innerText.split(':')[1].trim();
+            showQuestNotification({quest: questText, rank: questRank});
+          }
+        } else {
+          // Show an in-app message explaining how to enable notifications
+          showInAppNotification(
+            'Notifications Disabled', 
+            'Enable notifications in your browser settings to get quest alerts.'
+          );
         }
       });
     }
@@ -206,6 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return quests[randomIndex];
     }
   
+    // Improved display quest function with better notification
     function displayQuest(quest) {
       const questContainer = document.getElementById('quest-container');
       questContainer.innerHTML = '';
@@ -222,7 +237,107 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="countdown"></div>
       `;
       questContainer.appendChild(questElement);
-      showNotification('New quest available!');
+      
+      // Trigger notification with vibration, sound, and visual alert
+      showQuestNotification(quest);
+    }
+    
+    // New function specifically for quest notifications
+    function showQuestNotification(quest) {
+      // Create notification text
+      const notificationTitle = 'New Quest Available!';
+      const notificationBody = `${quest.quest} (Rank ${quest.rank})`;
+      
+      // Play notification sound
+      playSound();
+      
+      // Vibrate if available (mobile)
+      if (navigator.vibrate) {
+        navigator.vibrate([200, 100, 200]);
+      }
+      
+      // First check if we can use the Notification API
+      if (Notification.permission === 'granted') {
+        try {
+          // Create and show notification
+          const notification = new Notification(notificationTitle, {
+            body: notificationBody,
+            icon: './icon.png',
+            badge: './icon.png',
+            tag: 'new-quest-notification',
+            renotify: true,
+            requireInteraction: true // Keep notification until user interacts with it
+          });
+          
+          // When notification is clicked, focus the window and accept the quest
+          notification.onclick = function() {
+            window.focus();
+            this.close();
+          };
+        } catch (error) {
+          console.error('Notification error:', error);
+          // Fallback to in-app notification
+          showInAppNotification(notificationTitle, notificationBody);
+        }
+      } else if (Notification.permission !== 'denied') {
+        // If permission not granted yet, ask for it
+        const notifButton = document.getElementById('notification-permission-btn');
+        if (notifButton) {
+          notifButton.style.display = 'block';
+          notifButton.classList.add('notify-pulse');
+          setTimeout(() => {
+            notifButton.classList.remove('notify-pulse');
+          }, 2000);
+        }
+        
+        // Show in-app notification as fallback
+        showInAppNotification(notificationTitle, notificationBody);
+      } else {
+        // Permission denied - use in-app notification
+        showInAppNotification(notificationTitle, notificationBody);
+      }
+    }
+    
+    // In-app notification for when system notifications aren't available
+    function showInAppNotification(title, message) {
+      // Create notification element
+      const notifElement = document.createElement('div');
+      notifElement.className = 'in-app-notification';
+      notifElement.innerHTML = `
+        <div class="notification-content">
+          <h3>${title}</h3>
+          <p>${message}</p>
+        </div>
+        <button class="close-notification">×</button>
+      `;
+      
+      // Add to body
+      document.body.appendChild(notifElement);
+      
+      // Show with animation
+      setTimeout(() => {
+        notifElement.classList.add('show');
+      }, 10);
+      
+      // Add close button functionality
+      notifElement.querySelector('.close-notification').addEventListener('click', () => {
+        notifElement.classList.remove('show');
+        setTimeout(() => {
+          document.body.removeChild(notifElement);
+        }, 300);
+      });
+      
+      // Auto-close after 10 seconds
+      setTimeout(() => {
+        if (document.body.contains(notifElement)) {
+          notifElement.classList.remove('show');
+          setTimeout(() => {
+            if (document.body.contains(notifElement)) {
+              document.body.removeChild(notifElement);
+            }
+          }, 300);
+        }
+      }, 10000);
     }
   
     // Schedule a random quest (simulating daily notifications)
@@ -389,15 +504,34 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   
+    // Enhanced sound for notifications
     function playSound() {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const oscillator = ctx.createOscillator();
-      oscillator.connect(ctx.destination);
-      oscillator.frequency.value = 440;
-      oscillator.start();
-      setTimeout(() => {
-        oscillator.stop();
-      }, 150);
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        
+        // Use a nicer notification sound (a major chord)
+        gainNode.gain.value = 0.1; // Lower volume
+        oscillator.type = 'sine';
+        
+        // Play a pleasant chord
+        oscillator.frequency.value = 523.25; // C5
+        oscillator.start();
+        
+        // Fade out
+        gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.5);
+        
+        // Stop after 1.5 seconds
+        setTimeout(() => {
+          oscillator.stop();
+        }, 1500);
+      } catch (e) {
+        console.error('Error playing sound:', e);
+      }
     }
   
     function showMotivationalMessage() {

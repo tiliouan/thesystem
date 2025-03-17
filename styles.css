@@ -121,6 +121,103 @@ button:hover {
   z-index: 1000;
 }
 
+/* Add styles for notification permission button */
+.permission-button {
+  display: block;
+  margin: 10px auto;
+  padding: 12px 20px;
+  background-color: var(--accent-color, #00aaff);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.permission-button:hover {
+  background-color: #0088cc;
+}
+
+/* Animation for notification indicator */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); box-shadow: 0 0 10px rgba(255, 255, 255, 0.7); }
+  100% { transform: scale(1); }
+}
+
+.notify-pulse {
+  animation: pulse 0.5s ease-in-out 3;
+}
+
+/* In-app notification styles */
+.in-app-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 300px;
+  background-color: #333;
+  color: white;
+  border-left: 4px solid var(--accent-color, #00aaff);
+  border-radius: 4px;
+  padding: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  display: flex;
+  transform: translateX(400px);
+  transition: transform 0.3s ease;
+}
+
+.in-app-notification.show {
+  transform: translateX(0);
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-content h3 {
+  margin: 0 0 5px 0;
+  font-size: 16px;
+}
+
+.notification-content p {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.close-notification {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 0 0 10px;
+  align-self: flex-start;
+}
+
+/* Mobile specific styles */
+@media (max-width: 768px) {
+  .permission-button {
+    width: 90%;
+    padding: 15px;
+    font-size: 16px;
+  }
+
+  /* Make buttons more touch-friendly on mobile */
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .in-app-notification {
+    width: calc(100% - 40px);
+    left: 20px;
+    right: 20px;
+  }
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }

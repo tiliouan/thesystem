@@ -98,6 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Modified to support offline mode with quests.json as the source of truth
     function fetchQuests() {
+      // Use relative path for fetch
       fetch('./quests.json')
         .then(response => {
           if (!response.ok) {
@@ -106,10 +107,10 @@ document.addEventListener('DOMContentLoaded', () => {
           return response.json();
         })
         .then(data => {
+          console.log('Successfully loaded quests from quests.json');
           quests = data;
           // Always update the cache with the latest quests
           localStorage.setItem('cachedQuests', JSON.stringify(data));
-          console.log('Updated quests cache from quests.json');
           
           // If this is the first quest, schedule one immediately
           if (!document.querySelector('.quest')) {
@@ -118,42 +119,33 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .catch(err => {
           console.error("Error loading quests:", err);
-          // If we have no quests at all, try to use fallback quests
-          if (!quests || quests.length === 0) {
-            // Try to use the default quests.json content that was cached by the service worker
-            caches.match('./quests.json')
-              .then(response => {
-                if (response) {
-                  return response.json();
-                }
-                // If no cached version, use hard-coded fallback
-                return getFallbackQuests();
-              })
-              .then(fallbackQuests => {
-                quests = fallbackQuests;
-                localStorage.setItem('cachedQuests', JSON.stringify(fallbackQuests));
-                console.log('Using fallback quests');
-                scheduleRandomQuest();
-              })
-              .catch(() => {
-                // Last resort fallback
-                quests = getFallbackQuests();
-                localStorage.setItem('cachedQuests', JSON.stringify(quests));
-                scheduleRandomQuest();
-              });
+          // Try to load quests from localStorage first
+          const cachedQuests = localStorage.getItem('cachedQuests');
+          if (cachedQuests) {
+            quests = JSON.parse(cachedQuests);
+            console.log('Using cached quests from localStorage');
+            if (!document.querySelector('.quest')) {
+              scheduleRandomQuest();
+            }
+          } else {
+            // If no localStorage cache, use fallback quests
+            quests = getFallbackQuests();
+            localStorage.setItem('cachedQuests', JSON.stringify(quests));
+            console.log('Using fallback quests');
+            scheduleRandomQuest();
           }
         });
     }
   
-    // Fallback quests if everything else fails
+    // Fallback quests to use when offline and no cache exists
     function getFallbackQuests() {
-      return [
-        {"quest": "Do 20 push-ups", "rank": "E"},
-        {"quest": "Take a 15-minute walk", "rank": "E"},
-        {"quest": "Drink a glass of water", "rank": "E"},
-        {"quest": "Stretch for 5 minutes", "rank": "E"},
-        {"quest": "Practice deep breathing for 3 minutes", "rank": "E"}
-      ];
+      return JSON.parse(JSON.stringify([
+        {"quest": "Do 20 push-ups", "rank": "E", "time": "10min"},
+        {"quest": "Take a 15-minute walk", "rank": "E", "time": "15min"},
+        {"quest": "Drink a glass of water", "rank": "E", "time": "5min"},
+        {"quest": "Stretch for 5 minutes", "rank": "E", "time": "5min"},
+        {"quest": "Practice deep breathing for 3 minutes", "rank": "E", "time": "3min"}
+      ]));
     }
   
     // Returns a random quest time (in seconds) between 1 minute and 5 hours
@@ -187,14 +179,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     // Schedule a random quest (simulating daily notifications)
+    // Using a shorter delay for testing offline mode
     function scheduleRandomQuest() {
-        const delay = Math.floor(Math.random() * (21600000 - 300000 + 1)) + 300000; // Random delay between 5 mins and 6 hours (ms)
-        setTimeout(() => {
-          const quest = getRandomQuest();
-          displayQuest(quest);
-        }, delay);
-      }
+      // For the purpose of testing, we'll use a shorter delay
+      // 5-30 seconds instead of 5 mins to 6 hours
+      const delay = Math.floor(Math.random() * (30000 - 5000 + 1)) + 5000;
+      console.log(`Scheduling next quest in ${delay/1000} seconds`);
       
+      setTimeout(() => {
+        const quest = getRandomQuest();
+        displayQuest(quest);
+      }, delay);
+    }
   
     // When player accepts a quest, remove Accept/Decline buttons, show timer and a Done button
     window.acceptQuest = function (button, time, questText) {

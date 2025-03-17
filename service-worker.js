@@ -1,13 +1,13 @@
 const CACHE_NAME = "quest-app-v3";
 const urlsToCache = [
-  "/",
-  "/index.html",
-  "/styles.css",
-  "/scripts.js",
-  "/quests.json",  // Make sure quests.json is included
-  "/icon.png",
-  "/favicon.ico",
-  "/manifest.json"
+  "./",
+  "./index.html",
+  "./styles.css",
+  "./scripts.js",
+  "./quests.json",  
+  "./icon.png",
+  "./favicon.ico",
+  "./manifest.json"
 ];
 
 // Install service worker and cache files
@@ -40,7 +40,7 @@ self.addEventListener('activate', (event) => {
 
 // Fetch resources - cache-first strategy
 self.addEventListener("fetch", (event) => {
-  if (event.request.url.endsWith('quests.json')) {
+  if (event.request.url.includes('quests.json')) {
     event.respondWith(
       // Try the cache first
       caches.match(event.request)
@@ -75,11 +75,11 @@ self.addEventListener("fetch", (event) => {
         .catch(() => {
           // If offline and no cache, return a basic fallback
           const fallbackQuests = [
-            {"quest": "Do 20 push-ups", "rank": "E"},
-            {"quest": "Take a 15-minute walk", "rank": "E"},
-            {"quest": "Drink a glass of water", "rank": "E"},
-            {"quest": "Stretch for 5 minutes", "rank": "E"},
-            {"quest": "Practice deep breathing for 3 minutes", "rank": "E"}
+            {"quest": "Do 20 push-ups", "rank": "E", "time": "10min"},
+            {"quest": "Take a 15-minute walk", "rank": "E", "time": "15min"},
+            {"quest": "Drink a glass of water", "rank": "E", "time": "5min"},
+            {"quest": "Stretch for 5 minutes", "rank": "E", "time": "5min"},
+            {"quest": "Practice deep breathing for 3 minutes", "rank": "E", "time": "3min"}
           ];
           
           return new Response(JSON.stringify(fallbackQuests), {

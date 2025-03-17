@@ -75,39 +75,51 @@
       <!-- Search results will be shown here -->
     </div>
   </div>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging.js"></script>
+  
+  <!-- Replace Firebase scripts with a simplified mock for offline use -->
   <script>
+    // Mock Firebase for offline use
+    window.firebase = {
+      initializeApp: function() {
+        console.log('Mock Firebase initialized');
+        return {};
+      },
+      messaging: function() {
+        return {
+          onMessage: function(callback) {
+            console.log('Mock messaging set up');
+          }
+        };
+      }
+    };
+    
+    // Mock initialization
     const firebaseConfig = {
-    apiKey: "AIzaSyC9JkocYa1DZJfhLdV_qIYi7wT4Xbmu77I",
-    authDomain: "thesystem-syx.firebaseapp.com",
-    projectId: "thesystem-syx",
-    storageBucket: "thesystem-syx.firebasestorage.app",
-    messagingSenderId: "607837602827",
-    appId: "1:607837602827:web:dace4adf934a42a07a330e"
-  };
-  
-    firebase.initializeApp(firebaseConfig);
+      apiKey: "mock-key",
+      authDomain: "mock-domain",
+      projectId: "mock-project",
+      storageBucket: "mock-bucket",
+      messagingSenderId: "mock-sender",
+      appId: "mock-app-id"
+    };
+    
+    const app = firebase.initializeApp(firebaseConfig);
     const messaging = firebase.messaging();
-  
-    messaging.onMessage((payload) => {
-      new Notification(payload.notification.title, {
-        body: payload.notification.body,
-        icon: "/icon.png",
-      });
-    });
-  
+    
+    // Mock notification function
     function requestPermission() {
-      Notification.requestPermission().then((permission) => {
-        if (permission === "granted") {
-          console.log("Notification permission granted.");
-        }
-      });
+      if ('Notification' in window) {
+        Notification.requestPermission().then((permission) => {
+          if (permission === "granted") {
+            console.log("Notification permission granted.");
+          }
+        });
+      }
     }
   </script>  
   <script src="./scripts.js"></script>
   <script>
-    // Firebase implementation with offline support
+    // Offline mode detection
     document.addEventListener('DOMContentLoaded', () => {
       // Check if we're online
       if (!navigator.onLine) {
@@ -117,7 +129,6 @@
       // When back online
       window.addEventListener('online', () => {
         console.log('Back online, syncing data...');
-        // Here you could sync any data that was saved locally while offline
       });
       
       // When going offline
